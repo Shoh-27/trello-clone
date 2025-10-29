@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: trello_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trello_db
+      POSTGRES_USER: trello_user
+      POSTGRES_PASSWORD: trello_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - trello_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trello_user -d trello_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+
+volumes:
+  pgdata:
+    driver: local
+  pgadmin_data:
+    driver: local
+  vendor_volume:
+    driver: local
+  node_modules_frontend:
+    driver: local
+  node_modules_socket:
+    driver: local
+
+networks:
+  trello_network:
+    driver: bridge
