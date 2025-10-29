@@ -68,6 +68,28 @@ services:
           db:
             condition: service_healthy
         # Note: Laravel runs on PHP-FPM, exposed via Nginx
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development # Use 'production' for build mode
+    container_name: trello_frontend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - node_modules_frontend:/app/node_modules # Cache node_modules
+    environment:
+      VITE_API_URL: http://localhost/api
+      VITE_SOCKET_URL: http://localhost:3000
+    ports:
+      - "5173:5173" # Vite dev server (optional for direct access)
+    networks:
+      - trello_network
+    command: npm run dev -- --host 0.0.0.0
+    # Note: In production, build static files and serve via Nginx
+
 
 
 volumes:
