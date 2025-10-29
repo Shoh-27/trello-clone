@@ -1,0 +1,66 @@
+# ===========================================
+# Laravel / PHP
+# ===========================================
+/vendor/
+.env
+.phpunit.result.cache
+Homestead.yaml
+Homestead.json
+/storage/*.key
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/bootstrap/cache/*.php
+/public/storage
+/.idea
+/.vscode
+
+# ===========================================
+# Node.js / React frontend
+# ===========================================
+frontend/node_modules/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.production.local
+frontend/.env.test.local
+frontend/dist/
+frontend/build/
+
+# ===========================================
+# Socket.io server (Node.js)
+# ===========================================
+socket-server/node_modules/
+socket-server/.env
+
+# ===========================================
+# Docker / System files
+# ===========================================
+/docker-compose.override.yml
+*.pid
+*.seed
+*.log
+*.tmp
+*.bak
+*.swp
+*.tar
+*.gz
+*.zip
+
+# Volumes, caches, local configs
+pgdata/
+pgadmin_data/
+vendor/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.idea/
+.DS_Store
+
+# ===========================================
+# OS-specific
+# ===========================================
+Thumbs.db
+.DS_Store
