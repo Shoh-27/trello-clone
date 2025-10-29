@@ -43,6 +43,32 @@ services:
       # Note: Access pgAdmin at http://localhost:5050
       # To connect to PostgreSQL: Host=db, Port=5432, User=trello_user, Password=trello_secret
 
+  # Laravel Backend (PHP-FPM)
+  app:
+        build:
+          context: ./backend
+          dockerfile: Dockerfile
+        container_name: trello_app
+        restart: unless-stopped
+        working_dir: /var/www
+        volumes:
+          - ./backend:/var/www
+          - vendor_volume:/var/www/vendor # Cache vendor for performance
+        environment:
+          DB_CONNECTION: pgsql
+          DB_HOST: db
+          DB_PORT: 5432
+          DB_DATABASE: trello_db
+          DB_USERNAME: trello_user
+          DB_PASSWORD: trello_secret
+          SOCKET_SERVER_URL: http://socket:3000
+        networks:
+          - trello_network
+        depends_on:
+          db:
+            condition: service_healthy
+        # Note: Laravel runs on PHP-FPM, exposed via Nginx
+
 
 volumes:
   pgdata:
