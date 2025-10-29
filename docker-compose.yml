@@ -90,6 +90,26 @@ services:
     command: npm run dev -- --host 0.0.0.0
     # Note: In production, build static files and serve via Nginx
 
+  # Socket.io Server (Real-time)
+  socket:
+    build:
+      context: ./socket-server
+      dockerfile: Dockerfile
+    container_name: trello_socket
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./socket-server:/app
+      - node_modules_socket:/app/node_modules
+    ports:
+      - "3000:3000"
+    networks:
+      - trello_network
+    environment:
+      PORT: 3000
+      CORS_ORIGIN: http://localhost
+    command: node app.js
+    # Note: Receives events from Laravel and broadcasts to connected clients
 
 
 volumes:
