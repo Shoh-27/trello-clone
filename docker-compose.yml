@@ -111,6 +111,24 @@ services:
     command: node app.js
     # Note: Receives events from Laravel and broadcasts to connected clients
 
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: trello_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./backend/public:/var/www/public # For Laravel static assets
+      - ./frontend/dist:/usr/share/nginx/html # For production build
+    networks:
+      - trello_network
+    depends_on:
+      - app
+      - frontend
+      - socket
+    # Note: Routes /api -> Laravel, /socket.io -> Socket server, / -> Frontend
 
 volumes:
   pgdata:
