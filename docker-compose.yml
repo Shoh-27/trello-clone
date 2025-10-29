@@ -1,0 +1,147 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: trello_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trello_db
+      POSTGRES_USER: trello_user
+      POSTGRES_PASSWORD: trello_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - trello_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trello_user -d trello_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    # pgAdmin - PostgreSQL GUI Management Tool
+  pgadmin:
+      image: dpage/pgadmin4:latest
+      container_name: trello_pgadmin
+      restart: unless-stopped
+      environment:
+        PGADMIN_DEFAULT_EMAIL: admin@trello.local
+        PGADMIN_DEFAULT_PASSWORD: admin123
+        PGADMIN_CONFIG_SERVER_MODE: 'False'
+        PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+      ports:
+        - "5050:80"
+      volumes:
+        - pgadmin_data:/var/lib/pgadmin
+      networks:
+        - trello_network
+      depends_on:
+        - db
+      # Note: Access pgAdmin at http://localhost:5050
+      # To connect to PostgreSQL: Host=db, Port=5432, User=trello_user, Password=trello_secret
+
+  # Laravel Backend (PHP-FPM)
+  app:
+        build:
+          context: ./backend
+          dockerfile: Dockerfile
+        container_name: trello_app
+        restart: unless-stopped
+        working_dir: /var/www
+        volumes:
+          - ./backend:/var/www
+          - vendor_volume:/var/www/vendor # Cache vendor for performance
+        environment:
+          DB_CONNECTION: pgsql
+          DB_HOST: db
+          DB_PORT: 5432
+          DB_DATABASE: trello_db
+          DB_USERNAME: trello_user
+          DB_PASSWORD: trello_secret
+          SOCKET_SERVER_URL: http://socket:3000
+        networks:
+          - trello_network
+        depends_on:
+          db:
+            condition: service_healthy
+        # Note: Laravel runs on PHP-FPM, exposed via Nginx
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development # Use 'production' for build mode
+    container_name: trello_frontend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - node_modules_frontend:/app/node_modules # Cache node_modules
+    environment:
+      VITE_API_URL: http://localhost/api
+      VITE_SOCKET_URL: http://localhost:3000
+    ports:
+      - "5173:5173" # Vite dev server (optional for direct access)
+    networks:
+      - trello_network
+    command: npm run dev -- --host 0.0.0.0
+    # Note: In production, build static files and serve via Nginx
+
+  # Socket.io Server (Real-time)
+  socket:
+    build:
+      context: ./socket-server
+      dockerfile: Dockerfile
+    container_name: trello_socket
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./socket-server:/app
+      - node_modules_socket:/app/node_modules
+    ports:
+      - "3000:3000"
+    networks:
+      - trello_network
+    environment:
+      PORT: 3000
+      CORS_ORIGIN: http://localhost
+    command: node app.js
+    # Note: Receives events from Laravel and broadcasts to connected clients
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: trello_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./backend/public:/var/www/public # For Laravel static assets
+      - ./frontend/dist:/usr/share/nginx/html # For production build
+    networks:
+      - trello_network
+    depends_on:
+      - app
+      - frontend
+      - socket
+    # Note: Routes /api -> Laravel, /socket.io -> Socket server, / -> Frontend
+
+volumes:
+  pgdata:
+    driver: local
+  pgadmin_data:
+    driver: local
+  vendor_volume:
+    driver: local
+  node_modules_frontend:
+    driver: local
+  node_modules_socket:
+    driver: local
+
+networks:
+  trello_network:
+    driver: bridge
