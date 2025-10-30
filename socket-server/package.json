@@ -1,14 +1,19 @@
 {
-  "name": "$name$",
-  "version": "$version$",
-  "description": "$END$",
-  "main": "$main$",
+  "name": "trello-socket-server",
+  "version": "1.0.0",
+  "description": "Real-time Socket.io server for Trello Clone",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Shoh-27/trello-clone.git"
+  "dependencies": {
+    "socket.io": "^4.7.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2"
   },
-  "private": true
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
 }
