@@ -13,6 +13,10 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
+    'socket' => [
+        'url' => env('SOCKET_SERVER_URL', 'http://socket:3000'),
+        'endpoint' => env('SOCKET_EVENT_ENDPOINT', '/events'),
+    ],
 
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
