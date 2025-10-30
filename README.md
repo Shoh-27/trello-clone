@@ -9,7 +9,7 @@
 
 ### 1. Clone Repository
 ```bash
-git clone <repository-url>
+git clone [<repository-url>](https://github.com/Shoh-27/trello-clone.git)
 cd trello-clone
 ```
 
