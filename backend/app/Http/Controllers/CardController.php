@@ -155,4 +155,26 @@ class CardController extends Controller
         return response()->json($card);
     }
 
+    /**
+     * Reorder cards within a list
+     */
+    public function reorder(Request $request, BoardList $list)
+    {
+        Gate::authorize('view', $list->board);
+
+        $request->validate([
+            'cards' => 'required|array',
+            'cards.*.id' => 'required|exists:cards,id',
+            'cards.*.position' => 'required|integer',
+        ]);
+
+        foreach ($request->cards as $cardData) {
+            Card::where('id', $cardData['id'])
+                ->where('list_id', $list->id)
+                ->update(['position' => $cardData['position']]);
+        }
+
+        return response()->json(['message' => 'Cards reordered successfully']);
+    }
+
 }
