@@ -95,4 +95,30 @@ class CardController extends Controller
         return response()->json($card->load(['comments', 'assignments']));
     }
 
+    /**
+     * Remove the specified card
+     */
+    public function destroy(Request $request, Card $card)
+    {
+        Gate::authorize('view', $card->list->board);
+
+        $cardTitle = $card->title;
+        $boardId = $card->list->board_id;
+        $card->delete();
+
+        // Log activity
+        ActivityLog::create([
+            'action' => 'deleted',
+            'description' => "{$request->user()->name} deleted card \"{$cardTitle}\"",
+            'loggable_type' => Card::class,
+            'loggable_id' => $card->id,
+            'user_id' => $request->user()->id,
+        ]);
+
+        // Broadcast event
+        event(new CardUpdated($card, $boardId, 'deleted'));
+
+        return response()->json(['message' => 'Card deleted successfully']);
+    }
+
 }
