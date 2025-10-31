@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BoardController;
+use App\Http\Controllers\ListController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -18,4 +19,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     // Boards
     Route::apiResource('boards', BoardController::class);
+
+    // Lists
+    Route::post('/boards/{board}/lists', [ListController::class, 'store']);
+    Route::put('/lists/{list}', [ListController::class, 'update']);
+    Route::delete('/lists/{list}', [ListController::class, 'destroy']);
+    Route::post('/boards/{board}/lists/reorder', [ListController::class, 'reorder']);
+
 });
