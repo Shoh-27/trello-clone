@@ -45,4 +45,32 @@ class ListController extends Controller
 
         return response()->json($list->load('cards'), 201);
     }
+    /**
+     * Update the specified list
+     */
+    public function update(Request $request, BoardList $list)
+    {
+        Gate::authorize('view', $list->board);
+
+        $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'position' => 'sometimes|required|integer',
+        ]);
+
+        $list->update($request->all());
+
+        // Log activity
+        ActivityLog::create([
+            'action' => 'updated',
+            'description' => "{$request->user()->name} updated list \"{$list->title}\"",
+            'loggable_type' => BoardList::class,
+            'loggable_id' => $list->id,
+            'user_id' => $request->user()->id,
+        ]);
+
+        // Broadcast event
+        event(new ListUpdated($list, $list->board_id, 'updated'));
+
+        return response()->json($list->load('cards'));
+    }
 }
