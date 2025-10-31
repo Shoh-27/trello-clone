@@ -53,4 +53,32 @@ class BoardController extends Controller
 
         return response()->json($board);
     }
+
+    /**
+     * Update the specified board
+     */
+    public function update(Request $request, Board $board)
+    {
+        Gate::authorize('update', $board);
+
+        $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'background_color' => 'nullable|string|max:7',
+        ]);
+
+        $board->update($request->all());
+
+        // Log activity
+        ActivityLog::create([
+            'action' => 'updated',
+            'description' => "{$request->user()->name} updated board \"{$board->title}\"",
+            'loggable_type' => Board::class,
+            'loggable_id' => $board->id,
+            'user_id' => $request->user()->id,
+        ]);
+
+        return response()->json($board);
+    }
+
 }
