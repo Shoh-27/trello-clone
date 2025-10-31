@@ -81,4 +81,25 @@ class BoardController extends Controller
         return response()->json($board);
     }
 
+    /**
+     * Remove the specified board
+     */
+    public function destroy(Request $request, Board $board)
+    {
+        Gate::authorize('delete', $board);
+
+        $boardTitle = $board->title;
+        $board->delete();
+
+        // Log activity
+        ActivityLog::create([
+            'action' => 'deleted',
+            'description' => "{$request->user()->name} deleted board \"{$boardTitle}\"",
+            'loggable_type' => Board::class,
+            'loggable_id' => $board->id,
+            'user_id' => $request->user()->id,
+        ]);
+
+        return response()->json(['message' => 'Board deleted successfully']);
+    }
 }
