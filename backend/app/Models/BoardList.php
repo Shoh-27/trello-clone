@@ -5,30 +5,27 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Board extends Model
+class BoardList extends Model
 {
     use HasFactory;
 
+    protected $table = 'lists';
+
     protected $fillable = [
         'title',
-        'description',
-        'background_color',
-        'user_id',
+        'position',
+        'board_id',
     ];
 
     protected $casts = [
+        'position' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
     // Relationships
-    public function user()
+    public function board()
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function lists()
-    {
-        return $this->hasMany(BoardList::class)->orderBy('position');
+        return $this->belongsTo(Board::class);
     }
 }
