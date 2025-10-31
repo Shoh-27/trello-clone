@@ -121,4 +121,38 @@ class CardController extends Controller
         return response()->json(['message' => 'Card deleted successfully']);
     }
 
+    /**
+     * Move card to different list
+     */
+    public function move(Request $request, Card $card)
+    {
+        Gate::authorize('view', $card->list->board);
+
+        $request->validate([
+            'list_id' => 'required|exists:lists,id',
+            'position' => 'required|integer',
+        ]);
+
+        $oldListId = $card->list_id;
+        $card->update([
+            'list_id' => $request->list_id,
+            'position' => $request->position,
+        ]);
+
+        // Log activity
+        ActivityLog::create([
+            'action' => 'moved',
+            'description' => "{$request->user()->name} moved card \"{$card->title}\"",
+            'loggable_type' => Card::class,
+            'loggable_id' => $card->id,
+            'user_id' => $request->user()->id,
+            'metadata' => ['old_list_id' => $oldListId, 'new_list_id' => $request->list_id],
+        ]);
+
+        // Broadcast event
+        event(new CardUpdated($card, $card->list->board_id, 'moved'));
+
+        return response()->json($card);
+    }
+
 }
