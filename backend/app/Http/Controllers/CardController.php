@@ -49,4 +49,14 @@ class CardController extends Controller
 
         return response()->json($card->load(['comments', 'assignments']), 201);
     }
+
+    /**
+     * Display the specified card
+     */
+    public function show(Card $card)
+    {
+        Gate::authorize('view', $card->list->board);
+
+        return response()->json($card->load(['comments', 'assignments.user', 'activityLogs']));
+    }
 }
