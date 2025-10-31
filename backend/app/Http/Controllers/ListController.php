@@ -73,4 +73,30 @@ class ListController extends Controller
 
         return response()->json($list->load('cards'));
     }
+    /**
+     * Remove the specified list
+     */
+    public function destroy(Request $request, BoardList $list)
+    {
+        Gate::authorize('view', $list->board);
+
+        $listTitle = $list->title;
+        $boardId = $list->board_id;
+        $list->delete();
+
+        // Log activity
+        ActivityLog::create([
+            'action' => 'deleted',
+            'description' => "{$request->user()->name} deleted list \"{$listTitle}\"",
+            'loggable_type' => BoardList::class,
+            'loggable_id' => $list->id,
+            'user_id' => $request->user()->id,
+        ]);
+
+        // Broadcast event
+        event(new ListUpdated($list, $boardId, 'deleted'));
+
+        return response()->json(['message' => 'List deleted successfully']);
+    }
+
 }
