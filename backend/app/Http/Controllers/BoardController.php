@@ -42,4 +42,15 @@ class BoardController extends Controller
 
         return response()->json($board, 201);
     }
+    /**
+     * Display the specified board
+     */
+    public function show(Board $board)
+    {
+        Gate::authorize('view', $board);
+
+        $board->load(['lists.cards.assignments', 'lists.cards.comments']);
+
+        return response()->json($board);
+    }
 }
