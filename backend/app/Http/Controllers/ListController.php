@@ -98,5 +98,25 @@ class ListController extends Controller
 
         return response()->json(['message' => 'List deleted successfully']);
     }
+    /**
+     * Reorder lists
+     */
+    public function reorder(Request $request, Board $board)
+    {
+        Gate::authorize('view', $board);
 
+        $request->validate([
+            'lists' => 'required|array',
+            'lists.*.id' => 'required|exists:lists,id',
+            'lists.*.position' => 'required|integer',
+        ]);
+
+        foreach ($request->lists as $listData) {
+            BoardList::where('id', $listData['id'])
+                ->where('board_id', $board->id)
+                ->update(['position' => $listData['position']]);
+        }
+
+        return response()->json(['message' => 'Lists reordered successfully']);
+    }
 }
