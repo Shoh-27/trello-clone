@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BoardController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -15,4 +16,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    // Boards
+    Route::apiResource('boards', BoardController::class);
 });
