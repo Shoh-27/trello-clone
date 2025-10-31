@@ -59,4 +59,40 @@ class CardController extends Controller
 
         return response()->json($card->load(['comments', 'assignments.user', 'activityLogs']));
     }
+
+    /**
+     * Update the specified card
+     */
+    public function update(Request $request, Card $card)
+    {
+        Gate::authorize('view', $card->list->board);
+
+        $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'due_date' => 'nullable|date',
+            'position' => 'sometimes|required|integer',
+            'list_id' => 'sometimes|required|exists:lists,id',
+        ]);
+
+        $oldListId = $card->list_id;
+        $card->update($request->all());
+
+        // Log activity
+        $action = $request->has('list_id') && $oldListId != $request->list_id ? 'moved' : 'updated';
+        ActivityLog::create([
+            'action' => $action,
+            'description' => "{$request->user()->name} {$action} card \"{$card->title}\"",
+            'loggable_type' => Card::class,
+            'loggable_id' => $card->id,
+            'user_id' => $request->user()->id,
+            'metadata' => $request->has('list_id') ? ['old_list_id' => $oldListId, 'new_list_id' => $request->list_id] : null,
+        ]);
+
+        // Broadcast event
+        event(new CardUpdated($card, $card->list->board_id, $action));
+
+        return response()->json($card->load(['comments', 'assignments']));
+    }
+
 }
