@@ -52,4 +52,24 @@ class CommentController extends Controller
         return response()->json($comment->load('user'), 201);
     }
 
+    /**
+     * Update the specified comment
+     */
+    public function update(Request $request, Comment $comment)
+    {
+        Gate::authorize('view', $comment->card->list->board);
+
+        // Only comment owner can update
+        if ($comment->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'content' => 'required|string',
+        ]);
+
+        $comment->update(['content' => $request->content]);
+
+        return response()->json($comment->load('user'));
+    }
 }
