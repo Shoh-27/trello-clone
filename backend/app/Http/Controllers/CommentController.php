@@ -72,4 +72,21 @@ class CommentController extends Controller
 
         return response()->json($comment->load('user'));
     }
+
+    /**
+     * Remove the specified comment
+     */
+    public function destroy(Request $request, Comment $comment)
+    {
+        Gate::authorize('view', $comment->card->list->board);
+
+        // Only comment owner can delete
+        if ($comment->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $comment->delete();
+
+        return response()->json(['message' => 'Comment deleted successfully']);
+    }
 }
