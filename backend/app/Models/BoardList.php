@@ -33,4 +33,8 @@ class BoardList extends Model
     {
         return $this->hasMany(Card::class, 'list_id')->orderBy('position');
     }
+    public function activityLogs()
+    {
+        return $this->morphMany(ActivityLog::class, 'loggable');
+    }
 }
