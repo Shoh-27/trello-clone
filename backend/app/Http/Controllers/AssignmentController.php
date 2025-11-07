@@ -53,5 +53,35 @@ class AssignmentController extends Controller
 
         return response()->json($assignment->load('user'), 201);
     }
+    /**
+     * Remove assignment from card
+     */
+    public function destroy(Request $request, Card $card, User $user)
+    {
+        Gate::authorize('view', $card->list->board);
 
+        $assignment = Assignment::where('card_id', $card->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$assignment) {
+            return response()->json(['message' => 'Assignment not found'], 404);
+        }
+
+        $assignment->delete();
+
+        // Log activity
+        ActivityLog::create([
+            'action' => 'unassigned',
+            'description' => "{$request->user()->name} unassigned {$user->name} from \"{$card->title}\"",
+            'loggable_type' => Card::class,
+            'loggable_id' => $card->id,
+            'user_id' => $request->user()->id,
+        ]);
+
+        // Broadcast event
+        event(new CardUpdated($card, $card->list->board_id, 'unassigned'));
+
+        return response()->json(['message' => 'Assignment removed successfully']);
+    }
 }
