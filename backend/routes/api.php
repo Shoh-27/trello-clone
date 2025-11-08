@@ -4,6 +4,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\ListController;
 use App\Http\Controllers\CardController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\AssignmentController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -18,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+
     // Boards
     Route::apiResource('boards', BoardController::class);
 
@@ -35,4 +38,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cards/{card}/move', [CardController::class, 'move']);
     Route::post('/lists/{list}/cards/reorder', [CardController::class, 'reorder']);
 
+    // Comments
+    Route::get('/cards/{card}/comments', [CommentController::class, 'index']);
+    Route::post('/cards/{card}/comments', [CommentController::class, 'store']);
+    Route::put('/comments/{comment}', [CommentController::class, 'update']);
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+
+    // Assignments
+    Route::post('/cards/{card}/assign', [AssignmentController::class, 'store']);
+    Route::delete('/cards/{card}/assign/{user}', [AssignmentController::class, 'destroy']);
 });

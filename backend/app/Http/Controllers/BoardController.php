@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\ActivityLog;
 use App\Models\Board;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;

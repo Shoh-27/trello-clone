@@ -50,4 +50,17 @@ class User extends Authenticatable
     {
         return $this->hasMany(Board::class);
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class);
+    }
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
 }
